@@ -10,8 +10,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Century Portal - Administrative Dashboard",
-  description: "A comprehensive administrative portal for managing members, lanes, and workers with advanced analytics and real-time monitoring capabilities.",
+  title: "Century Cricket - Admin Portal",
+  description: "Administrative portal for managing Century Cricket operations.",
   keywords: ["admin portal", "dashboard", "management", "analytics", "century portal"],
   authors: [{ name: "Century Portal Team" }],
   robots: "noindex, nofollow",
