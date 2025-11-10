@@ -13,10 +13,7 @@ export const getFaciltyCode = async (limit: number) => {
   const response = await axios.post(`${API_BASE_URLS.facility}/query/txn`, {
     type: "inductionbooking",
     limit: limit,
-    sort: {
-      field: "updatedAt",
-      order: "desc",
-    },
+     
   });
 
   return response.data;

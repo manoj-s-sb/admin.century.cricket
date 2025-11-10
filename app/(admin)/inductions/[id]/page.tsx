@@ -39,6 +39,7 @@ export default function MemberDetailsPage() {
   const [expandedSteps, setExpandedSteps] = useState<Record<string, Set<number>>>({});
   const [inductionStepsList, setInductionStepsList] = useState<any>(null);
   const [saving, setSaving] = useState(false);
+  const [inductionLoading, setInductionLoading] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   useEffect(() => {
@@ -140,6 +141,7 @@ export default function MemberDetailsPage() {
   useEffect(() => {
     const fetchInductionList = async () => {
       try {
+        setInductionLoading(true);
         const response = await getInductionList({userId: params.id as string});
         console.log(response, "getInductionList response");
         // getInductionList already returns response.data, so use response directly
@@ -147,6 +149,8 @@ export default function MemberDetailsPage() {
         setInductionStepsList(response?.data || response);
       } catch (error) {
         console.error("Error fetching induction list:", error);
+      } finally {
+        setInductionLoading(false);
       }
     };
     fetchInductionList();
@@ -172,9 +176,10 @@ export default function MemberDetailsPage() {
       // Create array of objects with step id and status
       const stepsPayload = inductionSteps.map((step, stepIndex) => {
         const isChecked = completedStepsForInduction.has(stepIndex);
+        const isAlreadyCompleted = step?.status === "completed";
         return {
           id: step.id as string,
-          status: (isChecked ? "completed" : "pending") as "completed" | "pending"
+          status: (isChecked || isAlreadyCompleted ? "completed" : "pending") as "completed" | "pending"
         };
       });
 
@@ -186,6 +191,18 @@ export default function MemberDetailsPage() {
         userId: params.id as string,
         inductionId: inductionId,
         subSteps: stepsPayload
+      }).then(async (res) => {
+        setInductionLoading(true);
+        try {
+          const response = await getInductionList({ userId: params.id as string });
+          setInductionStepsList(response?.data || response);
+        } catch (err) {
+          console.error("Error fetching updated induction list:", err);
+        } finally {
+          setInductionLoading(false);
+        }
+      }).catch((err) => {
+        console.error("Error saving induction steps:", err);
       });
       
       // Check if all steps are completed
@@ -756,9 +773,16 @@ export default function MemberDetailsPage() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-xs font-medium text-gray-600 bg-gray-100 px-3 py-1.5 rounded-full">
-                {actualCompletedCount} of {inductionSteps.length} steps completed
-              </span>
+              {inductionLoading ? (
+                <div className="flex items-center gap-2 text-xs font-medium text-gray-600">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Loading...</span>
+                </div>
+              ) : (
+                <span className="text-xs font-medium text-gray-600 bg-gray-100 px-3 py-1.5 rounded-full">
+                  {actualCompletedCount} of {inductionSteps.length} steps completed
+                </span>
+              )}
               {isInductionExpanded ? (
                 <ChevronUp className="h-5 w-5 text-gray-500" />
               ) : (
@@ -767,8 +791,18 @@ export default function MemberDetailsPage() {
             </div>
           </div>
           
+          {/* Loading State */}
+          {inductionLoading && (
+            <div className="border-t border-gray-200 p-8 bg-gradient-to-br from-gray-50 to-white">
+              <div className="flex flex-col items-center justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin text-blue-600 mb-4" />
+                <p className="text-sm font-medium text-gray-600">Loading induction steps...</p>
+              </div>
+            </div>
+          )}
+          
           {/* Induction Steps */}
-          {isInductionExpanded && (
+          {isInductionExpanded && !inductionLoading && (
             <div className="border-t border-gray-200 p-5 bg-gradient-to-br from-gray-50 to-white">
               <div className="space-y-3 mb-6">
                 {inductionSteps.map((step, stepIndex) => {
