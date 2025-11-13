@@ -16,7 +16,7 @@ const formatStepTitle = (id: string): string => {
     .replace(/^./, (str) => str.toUpperCase())
     .trim();
 };
-
+ 
 interface AccordionItemProps {
   userId: string;
   email: string;

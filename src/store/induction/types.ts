@@ -34,6 +34,7 @@ export interface Induction {
   status: string;
   bookingCode: string;
   isInductionCompleted: boolean;
+  profileImageUrl: string;
   members: InductionMember[];
 }
 
